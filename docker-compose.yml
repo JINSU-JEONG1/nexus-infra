@@ -1,17 +1,36 @@
 version: '3.8'
 
 services:
-  # 1. Frontend Service (Web Server & Reverse Proxy)
-  frontend:
-    # Dockerfile 경로를 'nexus-ui' 폴더로 지정합니다.
-    build: 
-      context: ./nexus-ui
-    container_name: nexus-web
-    ports:
-      - "80:80"  # 외부에는 80 포트만 노출
-#    depends_on:
-#      - backend
+  # 1. 🌐 API Gateway (Nginx)
+  nginx-proxy:
+    container_name: nexus_gateway
+    image: nginx:stable-alpine
     restart: always
+    ports:
+      # 호스트 8081 포트를 컨테이너 80 포트로 매핑 (외부 접근 통로)
+      - "8081:80" 
+    volumes:
+      # Nginx 설정 파일 마운트 
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      # API와 UI 서비스가 먼저 실행된 후 Nginx가 시작되어야 함
+      - nexus-ui
+      # - nexus-api
+
+  nexus-ui:
+    container_name: nexus-ui
+    image: nexus-ui
+    build:
+      # ⭐ 수정: 현재 폴더(nexus-infra)에서 한 단계 상위(../)로 이동 후 nexus-ui 폴더 지정
+      context: ../nexus-ui 
+      dockerfile: Dockerfile
+    restart: always
+    # hot reload를 위해 소스 코드 마운트
+    volumes:
+      - ../nexus-ui:/app
+    expose:
+      - "3000"
 
 #  # 2. Backend Service (Spring Boot) - 부하 분산을 위해 2개로 복제
 #  backend:
