@@ -19,6 +19,9 @@ services:
       context: ../nexus-backend
       dockerfile: Dockerfile
     # 중요: 외부에 포트를 노출하지 않고, 내부 통신만 가능하도록 'expose' 사용
+    # 4000번 사용
+    environment:
+      - SERVER_PORT=4000
     expose:
       - "4000"
     # environment:
