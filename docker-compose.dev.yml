@@ -55,6 +55,6 @@ services:
       # 컨테이너가 삭제되어도 데이터가 사라지지 않도록 영속성 볼륨 지정
       - postgres_data:/var/lib/postgresql/data
 
-# DB 영속성 유지를 위한 볼륨 정의
+# DB 영속성 유지를 위한 볼륨 정의 (개발용)
 volumes:
   postgres_data:
