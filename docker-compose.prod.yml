@@ -38,19 +38,3 @@ services:
     deploy:
       replicas: 2  # ⭐ 핵심: 백엔드 컨테이너를 2개 띄움
     restart: always
-
- # Database Service 
-  nexus-db:
-    container_name: nexus-db
-    image: postgres:15-alpine
-    restart: always 
-    environment:
-      # Spring Boot가 DB에 접근할 때 필요한 정보
-      POSTGRES_USER: ${DB_ID} 
-      POSTGRES_PASSWORD: ${DB_PASSWORD} 
-      POSTGRES_DB: nexus_db # 데이터베이스 이름
-    ports:
-      - "5432:5432" # 로컬 PC에서 DBeaver 등으로 접속하여 데이터 확인용
-    volumes:
-      # 컨테이너가 삭제되어도 데이터가 사라지지 않도록 영속성 볼륨 지정
-      - /opt/db/postgres/nexus:/var/lib/postgresql/data
