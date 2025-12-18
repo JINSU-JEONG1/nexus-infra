@@ -32,4 +32,7 @@ services:
     # 로드밸런싱 2개
     deploy:
       replicas: 2  # ⭐ 핵심: 백엔드 컨테이너를 2개 띄움
+    # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # 호스트 IP 맵핑
     restart: always
