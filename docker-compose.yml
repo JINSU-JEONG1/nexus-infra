@@ -25,8 +25,6 @@ services:
       - SERVER_PORT=4000
       - DB_HOST=localhost
     network_mode: "host" # 컨테이너 격리를 풀고 호스트 네트워크를 직접 사용
-    deploy:
-      replicas: 2  # ⭐ 핵심: 백엔드 컨테이너를 2개 띄움
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
 
@@ -41,7 +39,5 @@ services:
       - SERVER_PORT=4001
       - DB_HOST=localhost
     network_mode: "host" # 컨테이너 격리를 풀고 호스트 네트워크를 직접 사용
-    deploy:
-      replicas: 2  # ⭐ 핵심: 백엔드 컨테이너를 2개 띄움
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
