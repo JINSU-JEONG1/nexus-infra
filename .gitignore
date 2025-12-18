@@ -6,6 +6,8 @@ nexus-api/
 
 
 # Log files
+nginx
+postgres_data
 
 # Editor directories and files
 .idea

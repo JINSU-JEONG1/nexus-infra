@@ -12,32 +12,38 @@ services:
     # hot reload를 위해 소스 코드 마운트
     ports:
       - "8081:80"
+    depends_on:
+      - nexus-backend
 
   # 2. backend(Spring Boot) - 부하 분산을 위해 2개로 복제
-  nexus-backend-1:
-    image: nexus-backend
+  nexus-backend:
     build:
       context: ../nexus-backend
       dockerfile: Dockerfile
     # 중요: 외부에 포트를 노출하지 않고, 내부 통신만 가능하도록 'expose' 사용
-    # 4000번 사용
+    deploy:
+      replicas: 2
     environment:
-      - SERVER_PORT=4000
-      - DB_HOST=localhost
-    network_mode: "host" # 컨테이너 격리를 풀고 호스트 네트워크를 직접 사용
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
+      SPRING_DATASOURCE_USERNAME: "${DB_ID}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD}"
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
+    depends_on:
+      - nexus-db
 
-  nexus-backend-2:
-    image: nexus-backend
-    build:
-      context: ../nexus-backend
-      dockerfile: Dockerfile
-    # 중요: 외부에 포트를 노출하지 않고, 내부 통신만 가능하도록 'expose' 사용
-    # 4000번 사용
-    environment:
-      - SERVER_PORT=4001
-      - DB_HOST=localhost
-    network_mode: "host" # 컨테이너 격리를 풀고 호스트 네트워크를 직접 사용
-    # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
+  # 3. DB
+  nexus-db:
+    image: postgres:14 # 사용하시던 버전 선택
+    container_name: nexus-db
     restart: always
+    environment:
+      POSTGRES_DB: nexus_prod
+      POSTGRES_USER: "${DB_ID}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+    # 볼륨
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data # 데이터 보존을 위한 경로
+    ports:
+      - "5432:5432"
+  
