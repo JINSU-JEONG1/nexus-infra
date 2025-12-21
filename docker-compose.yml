@@ -11,7 +11,7 @@ services:
     restart: always
     # hot reload를 위해 소스 코드 마운트
     ports:
-      - "8081:80"
+      - "80:80"
     depends_on:
       - nexus-backend
 
@@ -47,3 +47,6 @@ services:
     ports:
       - "5432:5432"
   
+volumes:
+  - /var/run/docker.sock:/var/run/docker.sock # 호스트 도커 엔진과 연결
+  - /usr/bin/docker:/usr/bin/docker           # 호스트 도커 실행파일 사용
