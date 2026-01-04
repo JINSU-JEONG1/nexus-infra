@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # frontend Service (Vue.js)
   nexus-ui:
@@ -14,13 +16,15 @@ services:
     # depends_on:
     #   - nexus-backend
 
-  # 2. backend(Spring Boot)
+  # 2. backend(Spring Boot) - 부하 분산을 위해 2개로 복제
   nexus-backend:
-    image: nexus-backend:latest
     # jenkins때문에 직접빌드안함
     # build:
     #   context: ../nexus-backend
     #   dockerfile: Dockerfile
+    # 중요: 외부에 포트를 노출하지 않고, 내부 통신만 가능하도록 'expose' 사용
+    deploy:
+      replicas: 2
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
