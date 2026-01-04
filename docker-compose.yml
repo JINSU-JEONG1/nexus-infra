@@ -5,9 +5,10 @@ services:
   nexus-ui:
     container_name: nexus-ui
     image: nexus-ui
-    build:
-      context: ../nexus-ui # 상위 폴더의 UI 프로젝트 참조
-      dockerfile: Dockerfile
+    # jenkins때문에 직접빌드안함
+    # build:
+    #   context: ../nexus-ui # 상위 폴더의 UI 프로젝트 참조
+    #   dockerfile: Dockerfile
     restart: always
     # hot reload를 위해 소스 코드 마운트
     ports:
@@ -17,9 +18,10 @@ services:
 
   # 2. backend(Spring Boot) - 부하 분산을 위해 2개로 복제
   nexus-backend:
-    build:
-      context: ../nexus-backend
-      dockerfile: Dockerfile
+    # jenkins때문에 직접빌드안함
+    # build:
+    #   context: ../nexus-backend
+    #   dockerfile: Dockerfile
     # 중요: 외부에 포트를 노출하지 않고, 내부 통신만 가능하도록 'expose' 사용
     deploy:
       replicas: 2
