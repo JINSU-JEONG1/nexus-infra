@@ -12,8 +12,8 @@ services:
     # hot reload를 위해 소스 코드 마운트
     ports:
       - "80:80"
-    depends_on:
-      - nexus-backend
+    # depends_on:
+    #   - nexus-backend
 
   # 2. backend(Spring Boot) - 부하 분산을 위해 2개로 복제
   nexus-backend:
@@ -24,13 +24,14 @@ services:
     deploy:
       replicas: 2
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
-      SPRING_DATASOURCE_USERNAME: "${DB_ID}"
-      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD}"
+      - SPRING_PROFILES_ACTIVE: prod
+      - SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
+      - SPRING_DATASOURCE_USERNAME: "${DB_ID}"
+      - SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD}"
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
-    depends_on:
-      - nexus-db
+    # depends_on:
+    #   - nexus-db
 
   # 3. DB
   nexus-db:
