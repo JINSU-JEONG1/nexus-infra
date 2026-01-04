@@ -26,10 +26,10 @@ services:
     deploy:
       replicas: 2
     environment:
-      - SPRING_PROFILES_ACTIVE: prod
-      - SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
-      - SPRING_DATASOURCE_USERNAME: "${DB_ID}"
-      - SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD}"
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
+      SPRING_DATASOURCE_USERNAME: ${DB_ID}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
     # depends_on:
