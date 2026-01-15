@@ -1,5 +1,5 @@
 services:
-  # frontend Service (Vue.js)
+  # frontend(Vue.js)
   nexus-ui:
     container_name: nexus-ui
     image: nexus-ui
@@ -14,7 +14,7 @@ services:
     # depends_on:
     #   - nexus-backend
 
-  # 2. backend(Spring Boot)
+  # backend(Spring Boot)
   nexus-backend:
     image: nexus-backend:latest
     # jenkins때문에 직접빌드안함
@@ -26,12 +26,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://nexus-db:5432/nexus_prod
       SPRING_DATASOURCE_USERNAME: ${DB_ID}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # Redis 연결 
+      SPRING_DATA_REDIS_HOST: nexus-redis
+      SPRING_DATA_REDIS_PORT: 6379
     # 같은 서버 위에서 동작하게 하기위한 host네임 설정 
     restart: always
     # depends_on:
     #   - nexus-db
 
-  # 3. DB
+  # DB
   nexus-db:
     image: postgres:14 # 사용하시던 버전 선택
     container_name: nexus-db
@@ -45,4 +48,13 @@ services:
       - ./postgres_data:/var/lib/postgresql/data # 데이터 보존을 위한 경로
     ports:
       - "5432:5432"
-  
+
+  # Redis
+  nexus-redis:
+    image: redis:alpine
+    container_name: nexus-redis
+    ports:
+      - "6379:6379"  # 레디스 기본 포트
+    restart: always
+    volumes:
+      - ./redis_data:/data # Redis 데이터 보존
