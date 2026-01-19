@@ -1,0 +1,54 @@
+services:
+  # frontend (Vite 개발 서버 사용 - Hot Reload 가능)
+  nexus-ui:
+    container_name: nexus-ui
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ../nexus-ui:/app
+      - /app/node_modules # 호스트의 node_modules가 덮어쓰지 않게 보호
+    ports:
+      - "3000:3000"
+    # Vite를 실행하되, Nginx 설정과 동일하게 API 요청을 전달하도록 구성
+    command: sh -c "npm install && npm run dev -- --host --port 3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # backend (Spring Boot)
+  nexus-backend:
+    container_name: nexus-backend
+    image: eclipse-temurin:21-jdk
+    working_dir: /app
+    volumes:
+      - ../nexus-backend:/app
+      - /app/build        # [속도 최적화] 빌드 결과물은 컨테이너 내부에서만 처리
+      - /app/.gradle      # [속도 최적화] Gradle 작업 폴더 격리
+      - gradle-cache:/root/.gradle
+    ports:
+      - "4000:4000" # 외부(내 PC)에선 4000, 컨테이너끼리는 4000 통신
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      # 로컬 SSH 터널(15432)을 통해 운영 DB 접속
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:15432/nexus_prod
+      - SPRING_DATASOURCE_USERNAME=${DB_ID}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=host.docker.internal
+      - SPRING_DATA_REDIS_PORT=6379
+    command: sh -c "chmod +x gradlew && ./gradlew bootRun"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Redis (운영과 동일하게 추가)
+  nexus-redis:
+    image: redis:alpine
+    container_name: nexus-redis
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis_data:/data
+    
+
+volumes:
+  gradle-cache:
+  redis_data: # Redis 데이터 보존용 볼륨
