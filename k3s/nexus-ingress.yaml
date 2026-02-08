@@ -1,0 +1,25 @@
+# Certbot 연동
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus-ui-ingress
+  annotations:
+    # 핵심: 아까 만든 ClusterIssuer 이름을 여기 적습니다.
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  tls:
+  - hosts:
+    - js-nexus.kro.kr
+    secretName: nexus-ui-tls # 인증서가 자동 저장될 이름
+  rules:
+  - host: js-nexus.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nexus-ui # 위 Service 이름과 일치
+            port:
+              number: 80
