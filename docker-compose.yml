@@ -1,18 +1,13 @@
 services:
-  # frontend(Vue.js)
-  nexus-ui:
+  # frontend 
+    build:
+      context: ../nexus-ui
     container_name: nexus-ui
-    image: nexus-ui
-    # jenkins때문에 직접빌드안함
-    # build:
-    #   context: ../nexus-ui # 상위 폴더의 UI 프로젝트 참조
-    #   dockerfile: Dockerfile
-    restart: always
-    # hot reload를 위해 소스 코드 마운트
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro # SSL 인증서 마운트 (읽기 전용)
     ports:
-      - "80:80"
-    # depends_on:
-    #   - nexus-backend
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
 
   # backend(Spring Boot)
   nexus-backend:
