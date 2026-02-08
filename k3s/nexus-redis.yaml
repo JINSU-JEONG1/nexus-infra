@@ -1,0 +1,48 @@
+# Kubernetes API 버전 (apps/v1: Deployment 등 애플리케이션 관련 리소스)
+apiVersion: apps/v1
+# 리소스 종류: Deployment (상태가 없는 애플리케이션의 배포 및 관리)
+kind: Deployment
+metadata:
+  # Deployment 리소스의 이름
+  name: nexus-redis
+spec:
+  # 상시 유지되어야 할 포드(Pod)의 개수
+  replicas: 1
+  # 관리할 대상 포드를 선택하는 기준 (labels가 app: nexus-redis인 포드를 선택)
+  selector:
+    matchLabels:
+      app: nexus-redis
+  # 실제로 생성될 포드의 상세 명세
+  template:
+    metadata:
+      # 포드에 부여할 라벨 (selector의 matchLabels와 일치해야 함)
+      labels:
+        app: nexus-redis
+    spec:
+      containers:
+      # 포드 내부의 컨테이너 설정
+      - name: redis
+        # 사용할 도커 이미지 및 버전 (가벼운 alpine 기반 Redis)
+        image: redis:alpine
+        ports:
+        # 컨테이너가 수신 대기하는 포트 (Redis 기본값 6379)
+        - containerPort: 6379
+---
+# Kubernetes API 버전
+apiVersion: v1
+# 리소스 종류: Service (포드를 네트워크에 노출시키기 위한 추상화 레이어)
+kind: Service
+metadata:
+  # 서비스의 이름
+  name: nexus-redis
+spec:
+  # 이 서비스가 트래픽을 전달할 대상 포드를 선택
+  selector:
+    app: nexus-redis
+  ports:
+    # 사용할 프로토콜 (기본값 TCP)
+    - protocol: TCP
+      # 서비스 외부로 노출되는 포트 (클러스터 내부 통신용)
+      port: 6379
+      # 대상 포드(컨테이너)의 실제 포트
+      targetPort: 6379

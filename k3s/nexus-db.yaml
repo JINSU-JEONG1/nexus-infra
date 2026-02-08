@@ -1,0 +1,92 @@
+# Kubernetes API 버전 (v1: Core 리소스)
+apiVersion: v1
+# 리소스 종류: PersistentVolumeClaim (영구적인 스토리지 할당 요청)
+kind: PersistentVolumeClaim
+metadata:
+  # PVC의 이름 (다른 리소스에서 이 이름을 참조함)
+  name: postgres-pvc
+spec:
+  # 접근 모드: 한 번에 하나의 노드(Node)에서만 읽기/쓰기 가능하도록 설정
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # 요청할 스토리지 용량 (2GiB)
+      storage: 2Gi
+---
+# Kubernetes API 버전 (apps/v1: Deployment 등 애플리케이션 관련 리소스)
+apiVersion: apps/v1
+# 리소스 종류: Deployment (상태가 없는 애플리케이션의 배포 및 관리)
+kind: Deployment
+metadata:
+  # Deployment 리소스의 이름
+  name: nexus-db
+spec:
+  # 상시 유지되어야 할 포드(Pod)의 개수
+  replicas: 1
+  # 관리할 대상 포드를 선택하는 기준 (labels가 app: nexus-db인 포드를 선택)
+  selector:
+    matchLabels:
+      app: nexus-db
+  # 실제로 생성될 포드의 상세 명세
+  template:
+    metadata:
+      # 포드에 부여할 라벨 (selector의 matchLabels와 일치해야 함)
+      labels:
+        app: nexus-db
+    spec:
+      containers:
+      # 포드 내부의 컨테이너 설정
+      - name: postgres
+        # 사용할 도커 이미지 및 버전 (PostgreSQL 14)
+        image: postgres:14
+        # 컨테이너 내에서 사용할 환경 변수 설정
+        env:
+        # 데이터베이스 이름 설정
+        - name: POSTGRES_DB
+          value: "nexus_prod"
+        # 데이터베이스 사용자 아이디 (Secret 리소스에서 안전하게 가져옴)
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: nexus-secrets
+              key: db-id
+        # 데이터베이스 비밀번호 (Secret 리소스에서 안전하게 가져옴)
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nexus-secrets
+              key: db-password
+        # 컨테이너가 로컬에서 수신 대기하는 포트
+        ports:
+        - containerPort: 5432
+        # 볼륨을 컨테이너 내부 경로에 연결(마운트)
+        volumeMounts:
+        - name: db-data
+          # 컨테이너 내부에서 데이터가 저장되는 실제 경로
+          mountPath: /var/lib/postgresql/data
+      # 이 포드에서 사용할 볼륨 정의
+      volumes:
+      - name: db-data
+        # 위에서 정의한 postgres-pvc를 통해 스토리지를 할당받음
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+# Kubernetes API 버전
+apiVersion: v1
+# 리소스 종류: Service (포드를 네트워크에 노출시키기 위한 추상화 레이어)
+kind: Service
+metadata:
+  # 서비스의 이름
+  name: nexus-db
+spec:
+  # 이 서비스가 트래픽을 전달할 대상 포드를 선택
+  selector:
+    app: nexus-db
+  ports:
+    # 사용할 프로토콜 (기본값 TCP)
+    - protocol: TCP
+      # 서비스 외부로 노출되는 포트 (클러스터 내부 통신용)
+      port: 5432
+      # 대상 포드(컨테이너)의 실제 포트
+      targetPort: 5432

@@ -1,0 +1,74 @@
+# Kubernetes API 버전 (apps/v1: Deployment 등 애플리케이션 관련 리소스)
+apiVersion: apps/v1
+# 리소스 종류: Deployment (애플리케이션 배포 및 복제 관리)
+kind: Deployment
+metadata:
+  # 리소스 이름
+  name: nexus-backend
+spec:
+  # 유지할 포드(Pod) 개수
+  replicas: 1
+  # 관리 대상 포드 선택 기준 (label이 app: nexus-backend인 포드)
+  selector:
+    matchLabels:
+      app: nexus-backend
+  # 생성될 포드의 템플릿
+  template:
+    metadata:
+      # 포드에 부여할 라벨 (selector와 일치해야 함)
+      labels:
+        app: nexus-backend
+    spec:
+      containers:
+      # 백엔드 Spring Boot 컨테이너 설정
+      - name: spring-boot
+        # 사용할 이미지 (로컬 빌드된 nexus-backend:latest)
+        image: nexus-backend:latest
+        # 컨테이너 내 환경 변수 설정
+        env:
+        # Spring Profile 설정 (운영 환경: prod)
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        # 데이터베이스 연결 URL (Service 이름 'nexus-db' 사용)
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://nexus-db:5432/nexus_prod"
+        # DB 사용자 아이디 (Secret에서 참조)
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: nexus-secrets
+              key: db-id
+        # DB 비밀번호 (Secret에서 참조)
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nexus-secrets
+              key: db-password
+        # Redis 호스트 설정 (Service 이름 'nexus-redis' 사용)
+        - name: SPRING_DATA_REDIS_HOST
+          value: "nexus-redis"
+        # Redis 포트 설정
+        - name: SPRING_DATA_REDIS_PORT
+          value: "6379"
+        ports:
+        # 애플리케이션이 사용하는 포트 (4000)
+        - containerPort: 4000
+---
+# Kubernetes API 버전
+apiVersion: v1
+# 리소스 종류: Service (포드를 네트워크에 노출)
+kind: Service
+metadata:
+  # 서비스 이름
+  name: nexus-backend
+spec:
+  # 트래픽을 전달할 대상 포드 선택
+  selector:
+    app: nexus-backend
+  ports:
+    # 사용할 프로토콜
+    - protocol: TCP
+      # 서비스 외부 포트
+      port: 4000
+      # 대상 포드(컨테이너) 포트
+      targetPort: 4000
