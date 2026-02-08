@@ -1,9 +1,9 @@
 services:
   # frontend 
   nexus-ui:
-    build:
-      context: ../nexus-ui
     container_name: nexus-ui
+    image: nexus-ui
+    restart: always
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro # SSL 인증서 마운트 (읽기 전용)
     ports:
