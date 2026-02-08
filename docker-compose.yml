@@ -1,5 +1,6 @@
 services:
   # frontend 
+  nexus-ui:
     build:
       context: ../nexus-ui
     container_name: nexus-ui
